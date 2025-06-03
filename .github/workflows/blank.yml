@@ -1,0 +1,53 @@
+import { useState, useEffect } from "react";
+
+export default function EURUSDWebApp() {
+  const [entry, setEntry] = useState(1.0840);
+  const [tp, setTP] = useState(1.0890);
+  const [sl, setSL] = useState(1.0810);
+  const [stake, setStake] = useState(10);
+  const [currentPrice, setCurrentPrice] = useState(1.0840);
+  const [signal, setSignal] = useState("");
+
+  useEffect(() => {
+    const avg = (tp + sl) / 2;
+    if (currentPrice > avg + 0.0003) {
+      setSignal("🟢 LONG SIGNAL → Probabile rialzo");
+    } else if (currentPrice < avg - 0.0003) {
+      setSignal("🔴 SHORT SIGNAL → Probabile ribasso");
+    } else {
+      setSignal("⏸️ Nessun segnale attivo (zona neutra)");
+    }
+  }, [currentPrice, tp, sl]);
+
+  const profitLoss = () => {
+    const diff = currentPrice - entry;
+    const pips = Math.abs(diff) * 10000;
+    const direction = diff >= 0 ? "Profitto" : "Perdita";
+    const amount = (pips / ((tp - sl) * 10000) * stake).toFixed(2);
+    return `${direction}: ${amount} € (${pips.toFixed(1)} pips)`;
+  };
+
+  return (
+    <div className="max-w-md mx-auto mt-10 p-4 border rounded-xl shadow-lg">
+      <h1 className="text-xl font-bold text-center mb-4">📈 EUR/USD Signal Tracker</h1>
+
+      <label>Prezzo di ingresso</label>
+      <input type="number" step="0.0001" value={entry} onChange={e => setEntry(parseFloat(e.target.value))} className="w-full mb-2 p-1 border rounded" />
+
+      <label>Take Profit</label>
+      <input type="number" step="0.0001" value={tp} onChange={e => setTP(parseFloat(e.target.value))} className="w-full mb-2 p-1 border rounded" />
+
+      <label>Stop Loss</label>
+      <input type="number" step="0.0001" value={sl} onChange={e => setSL(parseFloat(e.target.value))} className="w-full mb-2 p-1 border rounded" />
+
+      <label>Prezzo attuale</label>
+      <input type="number" step="0.0001" value={currentPrice} onChange={e => setCurrentPrice(parseFloat(e.target.value))} className="w-full mb-2 p-1 border rounded" />
+
+      <label>Stake (€)</label>
+      <input type="number" step="1" value={stake} onChange={e => setStake(parseFloat(e.target.value))} className="w-full mb-4 p-1 border rounded" />
+
+      <div className="text-center font-semibold text-blue-700 mb-2">{signal}</div>
+      <div className="text-center font-bold">{profitLoss()}</div>
+    </div>
+  );
+}
